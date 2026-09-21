@@ -45,7 +45,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
   useEffect(() => {
     const graph = sigma.getGraph();
     if (!graph) return;
-    
+
     const activeNodeId = hoveredNodeId || selectedNodeId;
 
     if (activeNodeId) {
@@ -54,11 +54,15 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("nodeReducer", (node, data) => {
         const res = { ...data };
         if (node === activeNodeId || neighbors.has(node)) {
-          res.forceLabel = true;
           if (node === activeNodeId) {
+            res.forceLabel = true;
             res.size = (data.size || 5) * 1.5;
+            res.highlighted = true; // Only highlight the active node
           }
           res.zIndex = 1;
+          res.highlighted = true;
+
+          //res.labelColor = "#ffffff";
         } else {
           res.color = "rgba(100, 100, 100, 0.1)"; // Very faded
           res.label = "";
@@ -71,7 +75,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
           res.color = "rgba(255, 200, 120, 1)";
-          res.size = 2; // Make edge thicker on hover
+          res.size = 0.5; // Make edge thinner (tiny)
           res.zIndex = 1;
         } else {
           res.hidden = true;
@@ -87,9 +91,9 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
   return null;
 };
 
-const sigmaSettings = { 
+const sigmaSettings = {
   nodeProgramClasses: { square: NodeSquareProgram },
-  defaultNodeType: "square", 
+  defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
   defaultNodeColor: "#999",
   defaultEdgeColor: "#333",
@@ -98,33 +102,7 @@ const sigmaSettings = {
   labelSize: 14,
   labelFont: "Arial",
   labelWeight: "normal",
-  labelRenderer: (context, data, settings) => {
-    if (!data.label) return;
-    const size = settings.labelSize || 14;
-    const font = settings.labelFont || "Arial";
-    const weight = settings.labelWeight || "normal";
-    context.font = `${weight} ${size}px ${font}`;
-    const width = context.measureText(data.label).width;
-    
-    const textOffsetX = (data.size || 5) + 4;
-    const textOffsetY = size / 3;
-    
-    const paddingX = 6;
-    const paddingY = 4;
-
-    // Draw solid white background
-    context.fillStyle = "#ffffff";
-    context.fillRect(
-      data.x + textOffsetX - paddingX, 
-      data.y + textOffsetY - size - paddingY + 3, 
-      width + (paddingX * 2), 
-      size + (paddingY * 2)
-    );
-    
-    // Draw dark text
-    context.fillStyle = "#000000";
-    context.fillText(data.label, data.x + textOffsetX, data.y + textOffsetY + 1);
-  },
+  defaultLabelColor: "#ffffff",
   hoverRenderer: (context, data, settings) => {
     // Draw node square
     const nodeSize = data.size || 5;
@@ -138,7 +116,7 @@ const sigmaSettings = {
     const weight = settings.labelWeight || "normal";
     context.font = `${weight} ${size}px ${font}`;
     const width = context.measureText(data.label).width;
-    
+
     const textOffsetX = nodeSize + 4;
     const textOffsetY = size / 3;
     const paddingX = 6;
@@ -146,12 +124,12 @@ const sigmaSettings = {
 
     context.fillStyle = "#ffffff";
     context.fillRect(
-      data.x + textOffsetX - paddingX, 
-      data.y + textOffsetY - size - paddingY + 3, 
-      width + (paddingX * 2), 
+      data.x + textOffsetX - paddingX,
+      data.y + textOffsetY - size - paddingY + 3,
+      width + (paddingX * 2),
       size + (paddingY * 2)
     );
-    
+
     context.fillStyle = "#000000";
     context.fillText(data.label, data.x + textOffsetX, data.y + textOffsetY + 1);
   }
@@ -172,8 +150,8 @@ function App() {
       <div className="shell">
         <aside className="list-panel" id="listPanel">
           <div className="panel">
-            <SearchBar 
-              sigmaInstance={sigmaInstance} 
+            <SearchBar
+              sigmaInstance={sigmaInstance}
               setSelectedNodeId={setSelectedNodeId}
               setHoveredNodeId={setHoveredNodeId}
             />
@@ -190,11 +168,11 @@ function App() {
               <p>Laying out Knowledge Graph...</p>
             </div>
           )}
-          <SigmaContainer 
-            style={{ width: "100%", height: "100%", position: "absolute" }} 
+          <SigmaContainer
+            style={{ width: "100%", height: "100%", position: "absolute" }}
             settings={sigmaSettings}
           >
-            <GraphManager 
+            <GraphManager
               setHoveredNode={setHoveredNodeId}
               hoveredNodeId={hoveredNodeId}
               selectedNodeId={selectedNodeId}
