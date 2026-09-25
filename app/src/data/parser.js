@@ -233,7 +233,7 @@ export async function loadGraphData() {
 
   // Final pass: apply a slight tilt (rotation) and save coordinates
   // Negative angle tilts the left side downwards and right side upwards
-  const angle = 0 * (Math.PI / 180);
+  const angle = 90 * (Math.PI / 180);
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);
 

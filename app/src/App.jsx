@@ -64,9 +64,13 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
 
           //res.labelColor = "#ffffff";
         } else {
-          res.color = "rgba(100, 100, 100, 0.1)"; // Very faded
-          res.label = "";
-          res.zIndex = 0;
+          if (selectedNodeId) {
+            res.hidden = true;
+          } else {
+            res.color = "rgba(100, 100, 100, 0.1)"; // Very faded
+            res.label = "";
+            res.zIndex = 0;
+          }
         }
         return res;
       });
