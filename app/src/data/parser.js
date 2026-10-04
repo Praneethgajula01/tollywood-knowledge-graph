@@ -133,12 +133,12 @@ export async function loadGraphData() {
 
     const actorColor = topGenre ? (genreColors[topGenre] || '#c4a6fb') : '#c4a6fb';
 
-    const xBase = (avgYear - 1930) * 1200 + (Math.random() - 0.5) * 4000;
-    const yBase = avgY + (Math.random() - 0.5) * 8000;
+    const xBase = (avgYear - 1930) * 1200 + (Math.random() - 0.5) * 40000;
+    const yBase = avgY + (Math.random() - 0.5) * 30000;
 
     // Keralam separation offset (modified to place actors directly downside)
     const ACTOR_OFFSET_X = 0;
-    const ACTOR_OFFSET_Y = 40000; // Push actors down to the bottom empty space
+    const ACTOR_OFFSET_Y = 80000; // Push actors down to the bottom empty space (leftmost after 90deg tilt)
 
     graph.addNode(`actor_${actor.id}`, {
       label: actor.name,
