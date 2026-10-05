@@ -1,14 +1,14 @@
 :root {
-  --bg: #02040a;
-  --panel: rgba(10, 12, 18, 0.68);
-  --panel-solid: #090d16;
-  --panel2: rgba(255, 255, 255, 0.04);
-  --line: rgba(255, 255, 255, 0.08);
-  --text: #f3f5f9;
-  --muted: #9ba3b2;
-  --cyan: #bdbdbd;
-  --accent-movie: #3b82f6;
-  --accent-actor: #10b981;
+  --bg: #fdfbf7;
+  --panel: rgba(255, 255, 255, 0.85);
+  --panel-solid: #ffffff;
+  --panel2: rgba(0, 0, 0, 0.02);
+  --line: rgba(0, 0, 0, 0.08);
+  --text: #2d2d2d;
+  --muted: #737373;
+  --cyan: #7a280f;
+  --accent-movie: #7a280f;
+  --accent-actor: #7a280f;
   --glass-blur: 24px;
 }
 
@@ -22,7 +22,7 @@ body {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
-  background: radial-gradient(circle at 47% 46%, #09111f 0%, #040812 62%, #02040a 100%);
+  background: linear-gradient(135deg, #fffdf8 0%, #ffedd5 100%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -41,12 +41,11 @@ header {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 16px;
-  background: rgba(8, 10, 15, 0.75);
+  background: rgba(122, 40, 15, 0.95);
   backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  border-bottom: 1px solid var(--line);
-  z-index: 20;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 header h1 {
@@ -58,7 +57,7 @@ header h1 {
 }
 
 .meta {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -76,18 +75,19 @@ aside {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  background: rgba(10, 13, 20, 0.65);
+  background: rgba(122, 40, 15, 0.95);
   backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   z-index: 10;
+  color: #ffffff;
 }
 
 aside.list-panel {
-  border-right: 1px solid var(--line);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 aside.detail {
-  border-left: 1px solid var(--line);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .panel {
@@ -124,12 +124,12 @@ aside.detail {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 /* Typography */
@@ -148,6 +148,10 @@ p {
   margin-top: 0;
 }
 
+aside p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* Inputs */
 label {
   display: block;
@@ -156,7 +160,7 @@ label {
   text-transform: uppercase;
   font-size: 11px;
   margin-bottom: 8px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 input,
@@ -165,14 +169,18 @@ button {
   width: 100%;
   min-width: 0;
   min-height: 38px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 10px;
-  color: var(--text);
+  color: #ffffff;
   padding: 9px 12px;
   font-family: inherit;
   font-size: 14px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 button {
@@ -183,15 +191,15 @@ button {
 button:hover,
 input:focus,
 select:focus {
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
   outline: none;
 }
 
 /* Sidebar Specifics */
 .sidebar-header {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding-bottom: 16px;
   margin-bottom: 8px;
 }
@@ -200,9 +208,9 @@ select:focus {
   width: 100%;
   border-radius: 12px;
   margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   object-fit: cover;
-  background: #080808;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .image-container {
@@ -227,14 +235,14 @@ select:focus {
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.15);
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .meta-label {
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
 }
 
@@ -250,21 +258,21 @@ select:focus {
 }
 
 .meta-value.rating {
-  color: #fbbf24;
+  color: #fef08a;
 }
 
 .overview-container {
   margin-top: 4px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.1);
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .overview-text {
   margin: 0;
   font-size: 14px;
-  color: #d1d5db;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* Badge types */
@@ -280,15 +288,15 @@ select:focus {
 }
 
 .badge-movie {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: var(--accent-movie);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .badge-actor {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: var(--accent-actor);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Search Bar (now in side panel) */
@@ -307,7 +315,7 @@ select:focus {
 .search-input-wrap svg {
   position: absolute;
   left: 12px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .search-input {
@@ -333,12 +341,12 @@ select:focus {
 .spinner {
   width: 42px;
   height: 42px;
-  border: 3px solid rgba(255, 255, 255, 0.08);
-  border-top-color: var(--cyan);
+  border: 3px solid rgba(122, 40, 15, 0.1);
+  border-top-color: var(--accent-movie);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 15px rgba(122, 40, 15, 0.05);
 }
 
 .loading-overlay p {
@@ -378,29 +386,29 @@ select:focus {
   display: flex;
   flex-direction: column;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .result:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
 .result .title {
   font-weight: 600;
   font-size: 14px;
-  color: var(--text);
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
 .result .sub {
   font-size: 11px;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 500;
@@ -420,9 +428,9 @@ select:focus {
   font-size: 12px;
   font-weight: 600;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--muted);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -431,13 +439,13 @@ select:focus {
 }
 
 .filter-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
 .filter-btn.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: var(--text);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #7a280f;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }

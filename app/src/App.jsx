@@ -18,11 +18,19 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
     loadGraphData().then(graph => {
       loadGraph(graph);
       setIsLoading(false);
+      
+      // Wait for the camera to fit the graph, then lock zoom out
+      setTimeout(() => {
+        if (sigma && sigma.getCamera()) {
+          const initialRatio = sigma.getCamera().getState().ratio;
+          sigma.setSetting("zoomMax", initialRatio);
+        }
+      }, 100);
     }).catch(error => {
       console.error("Failed to load graph data", error);
       setIsLoading(false);
     });
-  }, [loadGraph, setIsLoading]);
+  }, [loadGraph, setIsLoading, sigma]);
 
   useEffect(() => {
     registerEvents({
@@ -67,7 +75,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
           if (selectedNodeId) {
             res.hidden = true;
           } else {
-            res.color = "rgba(100, 100, 100, 0.1)"; // Very faded
+            res.color = "rgba(200, 195, 185, 0.3)"; // Faded
             res.label = "";
             res.zIndex = 0;
           }
@@ -78,7 +86,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("edgeReducer", (edge, data) => {
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
-          res.color = "rgba(255, 200, 120, 1)";
+          res.color = "rgba(122, 40, 15, 0.6)";
           res.size = 0.5; // Make edge thinner (tiny)
           res.zIndex = 1;
         } else {
@@ -99,14 +107,14 @@ const sigmaSettings = {
   nodeProgramClasses: { square: NodeSquareProgram },
   defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
-  defaultNodeColor: "#999",
-  defaultEdgeColor: "#333",
+  defaultNodeColor: "#e0d9cc",
+  defaultEdgeColor: "#f0ebe1",
   minEdgeSize: 0.01,
   maxEdgeSize: 1,
   labelSize: 14,
   labelFont: "Arial",
   labelWeight: "normal",
-  defaultLabelColor: "#ffffff",
+  defaultLabelColor: "#333333",
   hoverRenderer: (context, data, settings) => {
     // Draw node square
     const nodeSize = data.size || 5;
@@ -134,7 +142,7 @@ const sigmaSettings = {
       size + (paddingY * 2)
     );
 
-    context.fillStyle = "#000000";
+    context.fillStyle = "#7a280f";
     context.fillText(data.label, data.x + textOffsetX, data.y + textOffsetY + 1);
   }
 };
