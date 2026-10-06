@@ -66,13 +66,14 @@ header h1 {
 .shell {
   height: calc(100vh - 54px);
   min-height: 0;
-  display: grid;
-  grid-template-columns: 320px 1fr 340px;
+  display: flex;
   position: relative;
+  overflow: hidden;
 }
 
 aside {
   min-height: 0;
+  flex-shrink: 0;
   overflow-y: auto;
   overflow-x: hidden;
   background: rgba(122, 40, 15, 0.95);
@@ -80,14 +81,23 @@ aside {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   z-index: 10;
   color: #ffffff;
+  transition: margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 aside.list-panel {
+  width: 320px;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+aside.list-panel.closed {
+  margin-left: -320px;
 }
 
 aside.detail {
+  width: 340px;
   border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+aside.detail.closed {
+  margin-right: -340px;
 }
 
 .panel {
@@ -103,6 +113,31 @@ aside.detail {
   position: relative;
   min-width: 0;
   min-height: 0;
+  flex-grow: 1;
+}
+
+.toggle-line {
+  width: 6px;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20;
+}
+
+.toggle-line:hover {
+  background: #ffffff;
+}
+
+.toggle-line::after {
+  content: "";
+  display: block;
+  width: 2px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
 }
 
 .sigma-container {
@@ -111,6 +146,7 @@ aside.detail {
   position: absolute;
   top: 0;
   left: 0;
+  background: #fdff9d;
 }
 
 /* Scrollbars styling */

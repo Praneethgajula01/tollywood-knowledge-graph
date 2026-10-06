@@ -155,7 +155,7 @@ export async function loadGraphData() {
 
     // Edges
     const edgeOpacity = Math.min(0.2, 0.02 + (numMovies * 0.005));
-    const edgeColor = `rgba(66, 185, 199, ${edgeOpacity})`;
+    const edgeColor = `rgba(92, 64, 51, ${edgeOpacity})`;
 
     actor.movies.forEach(m => {
       const movieId = `movie_${m.movie_id}`;

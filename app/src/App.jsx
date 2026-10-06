@@ -152,15 +152,18 @@ function App() {
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sigmaInstance, setSigmaInstance] = useState(null);
+  
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
 
   return (
     <>
       <header>
         <h1>Telugu Movies Graph</h1>
-        <div className="meta">Most Complete Knowledge Graph of Telugu Movies</div>
+        <div className="meta">తెలుగు సినిమా… ఒకే గ్రాఫ్లో</div>
       </header>
       <div className="shell">
-        <aside className="list-panel" id="listPanel">
+        <aside className={`list-panel ${leftOpen ? '' : 'closed'}`} id="listPanel">
           <div className="panel">
             <SearchBar
               sigmaInstance={sigmaInstance}
@@ -172,6 +175,8 @@ function App() {
             </p>
           </div>
         </aside>
+
+        <div className="toggle-line" onClick={() => setLeftOpen(!leftOpen)} title="Toggle Left Panel"></div>
 
         <main className="stage" id="graphStage">
           {isLoading && (
@@ -195,7 +200,9 @@ function App() {
           </SigmaContainer>
         </main>
 
-        <aside className="detail" id="detailPanel">
+        <div className="toggle-line" onClick={() => setRightOpen(!rightOpen)} title="Toggle Right Panel"></div>
+
+        <aside className={`detail ${rightOpen ? '' : 'closed'}`} id="detailPanel">
           <Sidebar selectedNodeId={selectedNodeId} sigmaInstance={sigmaInstance} />
         </aside>
       </div>
