@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 const Sidebar = ({ selectedNodeId, sigmaInstance }) => {
   const [nodeData, setNodeData] = useState(null);
   const [cast, setCast] = useState([]);
+const [topActor, setTopActor] = useState(null); // Actor with most movies
+const [topActress, setTopActress] = useState(null); // Actress with most movies
 
   useEffect(() => {
     if (selectedNodeId && sigmaInstance) {
@@ -32,6 +34,31 @@ const Sidebar = ({ selectedNodeId, sigmaInstance }) => {
       setCast([]);
     }
   }, [selectedNodeId, sigmaInstance]);
+
+  // Compute top actor and actress when graph is available
+  useEffect(() => {
+    if (sigmaInstance) {
+      const graph = sigmaInstance.getGraph();
+      const actorMap = { male: null, female: null };
+      graph.forEachNode((nodeKey, attrs) => {
+        if (attrs.nodeType === 'actor') {
+          const movieCount = attrs.data?.movies?.length || 0;
+          const gender = attrs.data?.gender || 'unknown';
+          if (gender === 'male') {
+            if (!actorMap.male || movieCount > actorMap.male.count) {
+              actorMap.male = { label: attrs.label, count: movieCount };
+            }
+          } else if (gender === 'female') {
+            if (!actorMap.female || movieCount > actorMap.female.count) {
+              actorMap.female = { label: attrs.label, count: movieCount };
+            }
+          }
+        }
+      });
+      setTopActor(actorMap.male);
+      setTopActress(actorMap.female);
+    }
+  }, [sigmaInstance]);
 
   if (!nodeData) {
     return <div className="panel" style={{ alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted)' }}>Select a node to view details</div>;
