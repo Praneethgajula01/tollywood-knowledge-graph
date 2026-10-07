@@ -61,7 +61,7 @@ const [topActress, setTopActress] = useState(null); // Actress with most movies
   }, [sigmaInstance]);
 
   if (!nodeData) {
-    return <div className="panel" style={{ alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--muted)' }}>Select a node to view details</div>;
+    return <div className="panel" style={{ alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>Select a node to view details</div>;
   }
 
   const { nodeType: type, data, label } = nodeData;
