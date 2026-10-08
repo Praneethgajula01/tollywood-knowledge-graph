@@ -485,3 +485,85 @@ select:focus {
   color: #7a280f;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
+
+/* Simple DOB Scale on Left Side */
+.simple-scale-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 90px;
+  z-index: 25;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.simple-scale-title {
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  background: rgba(122, 40, 15, 0.9);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.simple-scale-axis-line {
+  position: absolute;
+  top: 42px;
+  bottom: 20px;
+  left: 20px;
+  width: 2px;
+  background: rgba(122, 40, 15, 0.4);
+}
+
+.simple-scale-tick-wrap {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.15s ease;
+}
+
+.simple-scale-tick-wrap:hover .simple-scale-label {
+  background: #7a280f;
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+.simple-scale-tick-wrap:hover .simple-scale-tick {
+  background: #7a280f;
+  width: 12px;
+}
+
+.simple-scale-tick {
+  width: 8px;
+  height: 2px;
+  background: #7a280f;
+  border-radius: 1px;
+  transition: all 0.2s ease;
+}
+
+.simple-scale-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a280f;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(122, 40, 15, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  user-select: none;
+}

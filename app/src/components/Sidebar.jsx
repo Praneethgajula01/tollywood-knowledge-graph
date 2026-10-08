@@ -128,7 +128,11 @@ const [topActress, setTopActress] = useState(null); // Actress with most movies
 
         {type === 'actor' && (
           <div className="meta-list">
-             <div className="meta-item">
+            <div className="meta-item">
+              <span className="meta-label">Birth Year (DOB)</span>
+              <span className="meta-value">{data.dobLabel || (data.dobYear ? `c. ${data.dobYear}` : 'Unknown')}</span>
+            </div>
+            <div className="meta-item">
               <span className="meta-label">Known For</span>
               <span className="meta-value">{data.movies ? data.movies.length : 0} Movies</span>
             </div>

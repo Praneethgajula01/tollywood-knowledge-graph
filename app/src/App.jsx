@@ -5,6 +5,8 @@ import { loadGraphData } from './data/parser';
 import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
 
+import DobScale from './components/DobScale';
+
 const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelectedNode, setIsLoading, setSigmaInstance }) => {
   const loadGraph = useLoadGraph();
   const sigma = useSigma();
@@ -86,7 +88,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("edgeReducer", (edge, data) => {
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
-          res.color = "rgba(122, 40, 15, 0.6)";
+          res.color = "rgba(75, 46, 26, 0.8)";
           res.size = 0.5; // Make edge thinner (tiny)
           res.zIndex = 1;
         } else {
@@ -108,7 +110,7 @@ const sigmaSettings = {
   defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
   defaultNodeColor: "#e0d9cc",
-  defaultEdgeColor: "#f0ebe1",
+  defaultEdgeColor: "#4b2e1a",
   minEdgeSize: 0.01,
   maxEdgeSize: 1,
   labelSize: 14,
@@ -197,6 +199,7 @@ function App() {
               setIsLoading={setIsLoading}
               setSigmaInstance={setSigmaInstance}
             />
+            <DobScale />
           </SigmaContainer>
         </main>
 
