@@ -49,7 +49,7 @@ const DobScale = () => {
   return (
     <div className="simple-scale-container">
       <div className="simple-scale-axis-line"></div>
-      <div className="simple-scale-title">DOB</div>
+      <div className="simple-scale-title">YEAR</div>
       {ticks.map(tick => {
         if (tick.y < -30 || tick.y > window.innerHeight + 30) return null;
         return (
@@ -58,7 +58,7 @@ const DobScale = () => {
             className="simple-scale-tick-wrap"
             style={{ top: `${tick.y}px` }}
             onClick={() => jumpToYear(tick.year)}
-            title={`Jump to birth year ${tick.year}`}
+            title={`Jump to year ${tick.year}`}
           >
             <div className="simple-scale-tick"></div>
             <span className="simple-scale-label">{tick.year}</span>

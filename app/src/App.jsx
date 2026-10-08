@@ -88,8 +88,8 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("edgeReducer", (edge, data) => {
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
-          res.color = "rgba(75, 46, 26, 0.8)";
-          res.size = 0.5; // Make edge thinner (tiny)
+          res.color = "rgba(92, 45, 18, 0.9)";
+          res.size = 0.8;
           res.zIndex = 1;
         } else {
           res.hidden = true;
@@ -110,9 +110,9 @@ const sigmaSettings = {
   defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
   defaultNodeColor: "#e0d9cc",
-  defaultEdgeColor: "#4b2e1a",
-  minEdgeSize: 0.01,
-  maxEdgeSize: 1,
+  defaultEdgeColor: "#5c2d12",
+  minEdgeSize: 0.1,
+  maxEdgeSize: 1.5,
   labelSize: 14,
   labelFont: "Arial",
   labelWeight: "normal",

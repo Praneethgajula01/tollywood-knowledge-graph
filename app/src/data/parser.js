@@ -202,14 +202,14 @@ export async function loadGraphData() {
     });
 
     // Edges
-    const edgeOpacity = Math.min(0.2, 0.02 + (numMovies * 0.005));
-    const edgeColor = `rgba(75, 46, 26, ${edgeOpacity})`;
+    const edgeOpacity = Math.min(0.4, 0.15 + (numMovies * 0.005));
+    const edgeColor = `rgba(92, 45, 18, ${edgeOpacity})`;
 
     actor.movies.forEach(m => {
       const movieId = `movie_${m.movie_id}`;
       if (graph.hasNode(movieId) && !graph.hasEdge(`actor_${actor.id}`, movieId)) {
         graph.addEdge(`actor_${actor.id}`, movieId, {
-          size: 0.0001,
+          size: 0.15,
           color: edgeColor
         });
       }
