@@ -1,32 +1,71 @@
 import { useEffect, useState } from 'react';
 
-const Sidebar = ({ selectedNodeId, sigmaInstance }) => {
+const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaInstance }) => {
   const [nodeData, setNodeData] = useState(null);
   const [cast, setCast] = useState([]);
-const [topActor, setTopActor] = useState(null); // Actor with most movies
-const [topActress, setTopActress] = useState(null); // Actress with most movies
+  const [topActor, setTopActor] = useState(null); // Actor with most movies
+  const [topActress, setTopActress] = useState(null); // Actress with most movies
+
+  const handleSelectNode = (nodeId) => {
+    if (!nodeId || !setSelectedNodeId) return;
+
+    if (sigmaInstance) {
+      const graph = sigmaInstance.getGraph();
+      if (graph && graph.hasNode(nodeId)) {
+        setSelectedNodeId(nodeId);
+        const nodeDisplayData = sigmaInstance.getNodeDisplayData(nodeId);
+        const camera = sigmaInstance.getCamera();
+        if (camera && nodeDisplayData) {
+          camera.animate(
+            { x: nodeDisplayData.x, y: nodeDisplayData.y, ratio: camera.getState().ratio },
+            { duration: 500 }
+          );
+        }
+      }
+    } else {
+      setSelectedNodeId(nodeId);
+    }
+  };
+
+  const getMovieNodeId = (movie) => {
+    if (!sigmaInstance) return null;
+    const graph = sigmaInstance.getGraph();
+    if (!graph) return null;
+
+    const id1 = `movie_${movie.movie_id}`;
+    if (graph.hasNode(id1)) return id1;
+    const id2 = `movie_${movie.id}`;
+    if (graph.hasNode(id2)) return id2;
+    return null;
+  };
 
   useEffect(() => {
     if (selectedNodeId && sigmaInstance) {
       const graph = sigmaInstance.getGraph();
-      const attrs = graph.getNodeAttributes(selectedNodeId);
-      setNodeData(attrs);
-      
-      if (attrs.nodeType === 'movie') {
-        const neighbors = graph.neighbors(selectedNodeId);
-        const actors = neighbors
-          .map(n => {
-            const actorAttrs = graph.getNodeAttributes(n);
-            // Try to find the character name from the actor's movie list
-            const movieData = actorAttrs.data?.movies?.find(m => `movie_${m.movie_id}` === selectedNodeId);
-            return {
-              ...actorAttrs,
-              character: movieData ? movieData.character : ''
-            };
-          })
-          .filter(a => a.nodeType === 'actor');
-        setCast(actors);
+      if (graph.hasNode(selectedNodeId)) {
+        const attrs = graph.getNodeAttributes(selectedNodeId);
+        setNodeData(attrs);
+        
+        if (attrs.nodeType === 'movie') {
+          const neighbors = graph.neighbors(selectedNodeId);
+          const actors = neighbors
+            .map(n => {
+              const actorAttrs = graph.getNodeAttributes(n);
+              // Try to find the character name from the actor's movie list
+              const movieData = actorAttrs.data?.movies?.find(m => `movie_${m.movie_id}` === selectedNodeId || `movie_${m.id}` === selectedNodeId);
+              return {
+                nodeId: n,
+                ...actorAttrs,
+                character: movieData ? movieData.character : ''
+              };
+            })
+            .filter(a => a.nodeType === 'actor');
+          setCast(actors);
+        } else {
+          setCast([]);
+        }
       } else {
+        setNodeData(null);
         setCast([]);
       }
     } else {
@@ -115,7 +154,15 @@ const [topActress, setTopActress] = useState(null); // Actress with most movies
                 <span className="meta-label block" style={{ marginTop: '16px', marginBottom: '12px' }}>Cast</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
                   {cast.map((actor, idx) => (
-                    <div key={actor.data.id || idx} className="result" style={{ cursor: 'default' }}>
+                    <div 
+                      key={actor.nodeId || actor.data?.id || idx} 
+                      className="result clickable" 
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handleSelectNode(actor.nodeId)}
+                      onMouseEnter={() => setHoveredNodeId && setHoveredNodeId(actor.nodeId)}
+                      onMouseLeave={() => setHoveredNodeId && setHoveredNodeId(null)}
+                      title="Click to view actor on graph"
+                    >
                       <span className="title">{actor.label}</span>
                       <span className="sub">{actor.character || 'Actor'}</span>
                     </div>
@@ -142,12 +189,24 @@ const [topActress, setTopActress] = useState(null); // Actress with most movies
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
                   {[...data.movies]
                     .sort((a, b) => (b.year || 0) - (a.year || 0))
-                    .map((movie, idx) => (
-                    <div key={movie.movie_id || idx} className="result" style={{ cursor: 'default' }}>
-                      <span className="title">{movie.title}</span>
-                      <span className="sub">{movie.year || 'Unknown Year'} {movie.character ? ` • ${movie.character}` : ''}</span>
-                    </div>
-                  ))}
+                    .map((movie, idx) => {
+                      const movieNodeId = getMovieNodeId(movie);
+                      const isAvailable = Boolean(movieNodeId);
+                      return (
+                        <div 
+                          key={movie.movie_id || movie.id || idx} 
+                          className={`result ${isAvailable ? 'clickable' : ''}`}
+                          style={{ cursor: isAvailable ? 'pointer' : 'default', opacity: isAvailable ? 1 : 0.6 }}
+                          onClick={() => isAvailable && handleSelectNode(movieNodeId)}
+                          onMouseEnter={() => isAvailable && setHoveredNodeId && setHoveredNodeId(movieNodeId)}
+                          onMouseLeave={() => isAvailable && setHoveredNodeId && setHoveredNodeId(null)}
+                          title={isAvailable ? "Click to view movie on graph" : "Movie not on graph"}
+                        >
+                          <span className="title">{movie.title}</span>
+                          <span className="sub">{movie.year || 'Unknown Year'} {movie.character ? ` • ${movie.character}` : ''}</span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}

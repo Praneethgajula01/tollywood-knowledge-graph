@@ -59,6 +59,7 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
     const activeNodeId = hoveredNodeId || selectedNodeId;
 
     if (activeNodeId) {
+      if (!graph.hasNode(activeNodeId)) return;
       const neighbors = new Set(graph.neighbors(activeNodeId));
 
       sigma.setSetting("nodeReducer", (node, data) => {
@@ -206,7 +207,12 @@ function App() {
         <div className="toggle-line" onClick={() => setRightOpen(!rightOpen)} title="Toggle Right Panel"></div>
 
         <aside className={`detail ${rightOpen ? '' : 'closed'}`} id="detailPanel">
-          <Sidebar selectedNodeId={selectedNodeId} sigmaInstance={sigmaInstance} />
+          <Sidebar
+            selectedNodeId={selectedNodeId}
+            setSelectedNodeId={setSelectedNodeId}
+            setHoveredNodeId={setHoveredNodeId}
+            sigmaInstance={sigmaInstance}
+          />
         </aside>
       </div>
     </>
