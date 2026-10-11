@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
 import { NodeSquareProgram } from '@sigma/node-square';
+import { NodeCircleProgram } from 'sigma/rendering';
 import { loadGraphData } from './data/parser';
 import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
@@ -107,7 +108,10 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
 };
 
 const sigmaSettings = {
-  nodeProgramClasses: { square: NodeSquareProgram },
+  nodeProgramClasses: {
+    square: NodeSquareProgram,
+    circle: NodeCircleProgram,
+  },
   defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
   defaultNodeColor: "#e0d9cc",
@@ -119,10 +123,18 @@ const sigmaSettings = {
   labelWeight: "normal",
   defaultLabelColor: "#333333",
   hoverRenderer: (context, data, settings) => {
-    // Draw node square
+    // Draw node shape
     const nodeSize = data.size || 5;
     context.fillStyle = data.color || settings.defaultNodeColor;
-    context.fillRect(data.x - nodeSize, data.y - nodeSize, nodeSize * 2, nodeSize * 2);
+
+    if (data.type === 'circle' || data.nodeType === 'actor') {
+      context.beginPath();
+      context.arc(data.x, data.y, nodeSize, 0, Math.PI * 2);
+      context.closePath();
+      context.fill();
+    } else {
+      context.fillRect(data.x - nodeSize, data.y - nodeSize, nodeSize * 2, nodeSize * 2);
+    }
 
     // Draw label with background
     if (!data.label) return;

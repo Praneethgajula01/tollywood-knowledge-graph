@@ -133,6 +133,7 @@ export async function loadGraphData() {
       size: Math.min(Math.max(nodeSize, 1.5), 10),
       color: movieColor,
       nodeType: 'movie',
+      type: 'square',
       data: {
         ...movie,
         poster_url: movie.poster_path ? `${TMDB_BASE_URL}${movie.poster_path}` : null
@@ -191,6 +192,7 @@ export async function loadGraphData() {
       size: Math.min(nodeSize, 8),
       color: actorColor,
       nodeType: 'actor',
+      type: 'circle',
       data: {
         ...actor,
         dobYear: actorDob,
