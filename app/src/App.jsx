@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { SigmaContainer, useLoadGraph, useRegisterEvents, useSigma } from '@react-sigma/core';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { NodeCircleProgram } from 'sigma/rendering';
+import { NodeDiamondProgram } from './rendering/NodeDiamondProgram';
 import { loadGraphData } from './data/parser';
 import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
@@ -112,6 +113,7 @@ const sigmaSettings = {
   nodeProgramClasses: {
     square: NodeSquareProgram,
     circle: NodeCircleProgram,
+    diamond: NodeDiamondProgram,
   },
   defaultNodeType: "square",
   labelRenderedSizeThreshold: 2,
@@ -128,9 +130,12 @@ const sigmaSettings = {
     const nodeSize = data.size || 5;
     context.fillStyle = data.color || settings.defaultNodeColor;
 
-    if (data.nodeType === 'director') {
+    if (data.type === 'diamond' || data.nodeType === 'director') {
       context.beginPath();
-      context.arc(data.x, data.y, nodeSize, 0, Math.PI * 2);
+      context.moveTo(data.x, data.y - nodeSize * 1.35);
+      context.lineTo(data.x + nodeSize * 1.35, data.y);
+      context.lineTo(data.x, data.y + nodeSize * 1.35);
+      context.lineTo(data.x - nodeSize * 1.35, data.y);
       context.closePath();
       context.fill();
       context.lineWidth = 2.5;

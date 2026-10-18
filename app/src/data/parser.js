@@ -241,7 +241,7 @@ export async function loadGraphData() {
       size: Math.min(Math.max(nodeSize, 1.8), 9),
       color: directorColor,
       nodeType: 'director',
-      type: 'circle',
+      type: 'diamond',
       data: {
         ...director,
         debutLabel: director.debut_year ? `${director.debut_year}` : 'Unknown',

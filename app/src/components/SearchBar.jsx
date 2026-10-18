@@ -87,7 +87,7 @@ const SearchBar = ({ sigmaInstance, setSelectedNodeId, setHoveredNodeId }) => {
             >
               <span className="title">{node.label}</span>
               <span className="sub">
-                {node.nodeType === 'actor' ? 'Actor' : node.nodeType === 'director' ? '🎬 Director' : 'Movie'}
+                {node.nodeType === 'actor' ? 'Actor' : node.nodeType === 'director' ? '◆ Director' : 'Movie'}
               </span>
             </div>
           ))}

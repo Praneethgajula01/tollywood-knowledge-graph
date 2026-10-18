@@ -136,7 +136,7 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
     <div className="panel">
       <div className="sidebar-header">
         <div className={`badge badge-${type}`}>
-          {type}
+          {type === 'director' ? '◆ DIRECTOR' : type}
         </div>
         <h2>{label}</h2>
       </div>
@@ -185,7 +185,7 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
                       onMouseLeave={() => setHoveredNodeId && setHoveredNodeId(null)}
                       title="Click to focus Director on graph"
                     >
-                      🎬 {dir.label}
+                      ◆ {dir.label}
                     </span>
                   ))}
                 </div>
