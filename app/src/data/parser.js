@@ -93,13 +93,15 @@ const KNOWN_DOBS = {
 };
 
 export async function loadGraphData() {
-  const [moviesRes, actorsRes] = await Promise.all([
+  const [moviesRes, actorsRes, directorsRes] = await Promise.all([
     fetch('/data/movies.json'),
-    fetch('/data/actors.json')
+    fetch('/data/actors.json'),
+    fetch('/data/directors.json')
   ]);
 
   const movies = await moviesRes.json();
   const actors = await actorsRes.json();
+  const directors = await directorsRes.json();
 
   const graph = new Graph();
 
@@ -115,7 +117,7 @@ export async function loadGraphData() {
   };
 
   // --- ADD MOVIE NODES ---
-  // Movies placed on the right column (+60,000 X), ordered vertically by release year
+  // Movies placed in the CENTER column (X = 0), ordered vertically by release year
   movies.forEach((movie) => {
     const year = movie.year || 2000;
     const popularity = movie.popularity || 0;
@@ -126,7 +128,7 @@ export async function loadGraphData() {
 
     // Top = Early Release Year (1930s), Bottom = Recent Release Year (2020s)
     const movieY = (2030 - year) * 1800 + (Math.random() - 0.5) * 1200;
-    const movieX = 60000 + (Math.random() - 0.5) * 35000;
+    const movieX = 0 + (Math.random() - 0.5) * 32000;
 
     graph.addNode(`movie_${movie.id}`, {
       label: movie.title,
@@ -144,7 +146,7 @@ export async function loadGraphData() {
   });
 
   // --- ADD ACTOR NODES ---
-  // Actors placed on the left column (-60,000 X), ordered strictly by DOB (Date of Birth)
+  // Actors placed on the LEFT column (-60,000 X), ordered strictly by DOB (Date of Birth)
   actors.forEach((actor) => {
     if (!actor.movies || actor.movies.length === 0) return;
 
@@ -185,7 +187,7 @@ export async function loadGraphData() {
 
     // Top = Early DOB (e.g. 1910s - NTR, ANR, S.V. Ranga Rao), Bottom = Recent DOB (e.g. 1990s/2000s - Vijay Deverakonda, Nani)
     const actorY = (2030 - actorDob) * 1800 + (Math.random() - 0.5) * 1200;
-    const actorX = -60000 + (Math.random() - 0.5) * 35000;
+    const actorX = -60000 + (Math.random() - 0.5) * 32000;
 
     graph.addNode(`actor_${actor.id}`, {
       label: actor.name,
@@ -203,7 +205,7 @@ export async function loadGraphData() {
       y: actorY
     });
 
-    // Edges
+    // Edges from Actor to Movie
     const edgeOpacity = Math.min(0.4, 0.15 + (numMovies * 0.005));
     const edgeColor = `rgba(92, 45, 18, ${edgeOpacity})`;
 
@@ -218,9 +220,55 @@ export async function loadGraphData() {
     });
   });
 
-  // Remove isolated movie nodes (no actors connected)
+  // --- ADD DIRECTOR NODES ---
+  // Directors placed on the RIGHT column (+60,000 X), ordered vertically by debut year
+  directors.forEach((director) => {
+    if (!director.movies || director.movies.length === 0) return;
+
+    const numMovies = director.movie_count || director.movies.length;
+    const baseSize = 1.4;
+    const nodeSize = baseSize + (Math.sqrt(numMovies) * 0.7);
+
+    const debutYear = director.debut_year || 2010;
+    const directorY = (2030 - debutYear) * 1800 + (Math.random() - 0.5) * 1200;
+    const directorX = 60000 + (Math.random() - 0.5) * 32000;
+
+    // Distinct Sky Blue / Azure tone for Directors
+    const directorColor = '#0284c7';
+
+    graph.addNode(`director_${director.id}`, {
+      label: director.name,
+      size: Math.min(Math.max(nodeSize, 1.8), 9),
+      color: directorColor,
+      nodeType: 'director',
+      type: 'circle',
+      data: {
+        ...director,
+        debutLabel: director.debut_year ? `${director.debut_year}` : 'Unknown',
+        profile_url: director.profile_path ? `${TMDB_BASE_URL}${director.profile_path}` : null
+      },
+      x: directorX,
+      y: directorY
+    });
+
+    // Edges from Director to Movie
+    const directorEdgeOpacity = Math.min(0.45, 0.18 + (numMovies * 0.005));
+    const directorEdgeColor = `rgba(2, 132, 199, ${directorEdgeOpacity})`;
+
+    director.movies.forEach(m => {
+      const movieId = `movie_${m.movie_id || m.id}`;
+      if (graph.hasNode(movieId) && !graph.hasEdge(`director_${director.id}`, movieId)) {
+        graph.addEdge(`director_${director.id}`, movieId, {
+          size: 0.18,
+          color: directorEdgeColor
+        });
+      }
+    });
+  });
+
+  // Remove isolated nodes
   graph.forEachNode((node, attrs) => {
-    if (attrs.nodeType === 'movie' && graph.degree(node) === 0) {
+    if ((attrs.nodeType === 'movie' || attrs.nodeType === 'director') && graph.degree(node) === 0) {
       graph.dropNode(node);
     }
   });

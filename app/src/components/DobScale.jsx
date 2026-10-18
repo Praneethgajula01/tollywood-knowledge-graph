@@ -13,7 +13,7 @@ const DobScale = () => {
     try {
       const newTicks = YEARS.map(year => {
         const graphY = (2030 - year) * 1800;
-        const pos = sigma.graphToViewport({ x: -45000, y: graphY });
+        const pos = sigma.graphToViewport({ x: -30000, y: graphY });
         return {
           year,
           y: pos.y,
@@ -41,7 +41,7 @@ const DobScale = () => {
     const camera = sigma.getCamera();
     const targetY = (2030 - year) * 1800;
     camera.animate(
-      { x: -40000, y: targetY },
+      { x: 0, y: targetY },
       { duration: 500 }
     );
   };

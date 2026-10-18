@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaInstance }) => {
   const [nodeData, setNodeData] = useState(null);
   const [cast, setCast] = useState([]);
+  const [movieDirectors, setMovieDirectors] = useState([]);
   const [topActor, setTopActor] = useState(null); // Actor with most movies
   const [topActress, setTopActress] = useState(null); // Actress with most movies
+  const [topDirector, setTopDirector] = useState(null); // Prolific director
 
   const handleSelectNode = (nodeId) => {
     if (!nodeId || !setSelectedNodeId) return;
@@ -39,6 +41,16 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
     return null;
   };
 
+  const getActorNodeId = (actor) => {
+    if (!sigmaInstance) return null;
+    const graph = sigmaInstance.getGraph();
+    if (!graph) return null;
+
+    const id1 = `actor_${actor.id}`;
+    if (graph.hasNode(id1)) return id1;
+    return null;
+  };
+
   useEffect(() => {
     if (selectedNodeId && sigmaInstance) {
       const graph = sigmaInstance.getGraph();
@@ -51,7 +63,6 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
           const actors = neighbors
             .map(n => {
               const actorAttrs = graph.getNodeAttributes(n);
-              // Try to find the character name from the actor's movie list
               const movieData = actorAttrs.data?.movies?.find(m => `movie_${m.movie_id}` === selectedNodeId || `movie_${m.id}` === selectedNodeId);
               return {
                 nodeId: n,
@@ -61,24 +72,34 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
             })
             .filter(a => a.nodeType === 'actor');
           setCast(actors);
+
+          const dirs = neighbors
+            .map(n => ({ nodeId: n, ...graph.getNodeAttributes(n) }))
+            .filter(d => d.nodeType === 'director');
+          setMovieDirectors(dirs);
         } else {
           setCast([]);
+          setMovieDirectors([]);
         }
       } else {
         setNodeData(null);
         setCast([]);
+        setMovieDirectors([]);
       }
     } else {
       setNodeData(null);
       setCast([]);
+      setMovieDirectors([]);
     }
   }, [selectedNodeId, sigmaInstance]);
 
-  // Compute top actor and actress when graph is available
+  // Compute top stats when graph is available
   useEffect(() => {
     if (sigmaInstance) {
       const graph = sigmaInstance.getGraph();
       const actorMap = { male: null, female: null };
+      let topDir = null;
+
       graph.forEachNode((nodeKey, attrs) => {
         if (attrs.nodeType === 'actor') {
           const movieCount = attrs.data?.movies?.length || 0;
@@ -92,10 +113,16 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
               actorMap.female = { label: attrs.label, count: movieCount };
             }
           }
+        } else if (attrs.nodeType === 'director') {
+          const movieCount = attrs.data?.movies?.length || attrs.data?.movie_count || 0;
+          if (!topDir || movieCount > topDir.count) {
+            topDir = { label: attrs.label, count: movieCount };
+          }
         }
       });
       setTopActor(actorMap.male);
       setTopActress(actorMap.female);
+      setTopDirector(topDir);
     }
   }, [sigmaInstance]);
 
@@ -118,9 +145,9 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
         {type === 'movie' && data.poster_url && (
           <img src={data.poster_url} alt={label} className="sidebar-image" />
         )}
-        {type === 'actor' && data.profile_url && (
+        {(type === 'actor' || type === 'director') && data.profile_url && (
           <div className="image-container">
-            <img src={data.profile_url} alt={label} className="sidebar-image actor" />
+            <img src={data.profile_url} alt={label} className={`sidebar-image ${type}`} />
           </div>
         )}
         
@@ -130,6 +157,46 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
               <span className="meta-label">Year</span>
               <span className="meta-value">{data.year || 'Unknown'}</span>
             </div>
+
+            {/* Directors of this movie */}
+            {movieDirectors.length > 0 ? (
+              <div className="meta-item">
+                <span className="meta-label">Director</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {movieDirectors.map(dir => (
+                    <span 
+                      key={dir.nodeId} 
+                      className="result clickable"
+                      style={{ 
+                        cursor: 'pointer', 
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px', 
+                        borderRadius: '16px',
+                        backgroundColor: 'rgba(2, 132, 199, 0.25)',
+                        border: '1px solid rgba(56, 189, 248, 0.4)',
+                        color: '#bae6fd',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}
+                      onClick={() => handleSelectNode(dir.nodeId)}
+                      onMouseEnter={() => setHoveredNodeId && setHoveredNodeId(dir.nodeId)}
+                      onMouseLeave={() => setHoveredNodeId && setHoveredNodeId(null)}
+                      title="Click to focus Director on graph"
+                    >
+                      🎬 {dir.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : data.directors && data.directors.length > 0 ? (
+              <div className="meta-item">
+                <span className="meta-label">Director</span>
+                <span className="meta-value">{data.directors.map(d => d.name).join(', ')}</span>
+              </div>
+            ) : null}
+
             {data.genres && (
               <div className="meta-item">
                 <span className="meta-label">Genres</span>
@@ -204,6 +271,81 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
                         >
                           <span className="title">{movie.title}</span>
                           <span className="sub">{movie.year || 'Unknown Year'} {movie.character ? ` • ${movie.character}` : ''}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {type === 'director' && (
+          <div className="meta-list">
+            <div className="meta-item">
+              <span className="meta-label">Debut Era</span>
+              <span className="meta-value">{data.debutLabel || (data.debut_year ? `c. ${data.debut_year}` : 'Unknown')}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Career Output</span>
+              <span className="meta-value">{data.movies ? data.movies.length : data.movie_count || 0} Films</span>
+            </div>
+            {data.top_genres && data.top_genres.length > 0 && (
+              <div className="meta-item">
+                <span className="meta-label">Key Genres</span>
+                <span className="meta-value">{data.top_genres.join(', ')}</span>
+              </div>
+            )}
+
+            {/* Top Frequent Actor Collaborators */}
+            {data.top_actors && data.top_actors.length > 0 && (
+              <div className="director-collaborators-list">
+                <span className="meta-label block" style={{ marginTop: '16px', marginBottom: '12px' }}>Frequent Actors</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {data.top_actors.map((actor, idx) => {
+                    const actorNodeId = getActorNodeId(actor);
+                    const isAvailable = Boolean(actorNodeId);
+                    return (
+                      <div
+                        key={actor.id || idx}
+                        className={`result ${isAvailable ? 'clickable' : ''}`}
+                        style={{ cursor: isAvailable ? 'pointer' : 'default', opacity: isAvailable ? 1 : 0.7 }}
+                        onClick={() => isAvailable && handleSelectNode(actorNodeId)}
+                        onMouseEnter={() => isAvailable && setHoveredNodeId && setHoveredNodeId(actorNodeId)}
+                        onMouseLeave={() => isAvailable && setHoveredNodeId && setHoveredNodeId(null)}
+                        title={isAvailable ? "Click to view actor on graph" : "Actor not on graph"}
+                      >
+                        <span className="title">{actor.name}</span>
+                        <span className="sub">⭐ {actor.count} {actor.count === 1 ? 'film' : 'films'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Filmography */}
+            {data.movies && data.movies.length > 0 && (
+              <div className="director-movies-list">
+                <span className="meta-label block" style={{ marginTop: '16px', marginBottom: '12px' }}>Filmography</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {[...data.movies]
+                    .sort((a, b) => (b.year || 0) - (a.year || 0))
+                    .map((movie, idx) => {
+                      const movieNodeId = getMovieNodeId(movie);
+                      const isAvailable = Boolean(movieNodeId);
+                      return (
+                        <div 
+                          key={movie.movie_id || movie.id || idx} 
+                          className={`result ${isAvailable ? 'clickable' : ''}`}
+                          style={{ cursor: isAvailable ? 'pointer' : 'default', opacity: isAvailable ? 1 : 0.6 }}
+                          onClick={() => isAvailable && handleSelectNode(movieNodeId)}
+                          onMouseEnter={() => isAvailable && setHoveredNodeId && setHoveredNodeId(movieNodeId)}
+                          onMouseLeave={() => isAvailable && setHoveredNodeId && setHoveredNodeId(null)}
+                          title={isAvailable ? "Click to view movie on graph" : "Movie not on graph"}
+                        >
+                          <span className="title">{movie.title}</span>
+                          <span className="sub">{movie.year || 'Unknown Year'} {movie.vote_average ? ` • ⭐ ${Number(movie.vote_average).toFixed(1)}` : ''}</span>
                         </div>
                       );
                     })}

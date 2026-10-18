@@ -90,8 +90,9 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("edgeReducer", (edge, data) => {
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
-          res.color = "rgba(92, 45, 18, 0.9)";
-          res.size = 0.8;
+          const activeType = graph.getNodeAttribute(activeNodeId, 'nodeType');
+          res.color = activeType === 'director' ? "rgba(2, 132, 199, 0.95)" : "rgba(92, 45, 18, 0.9)";
+          res.size = 1.0;
           res.zIndex = 1;
         } else {
           res.hidden = true;
@@ -127,7 +128,15 @@ const sigmaSettings = {
     const nodeSize = data.size || 5;
     context.fillStyle = data.color || settings.defaultNodeColor;
 
-    if (data.type === 'circle' || data.nodeType === 'actor') {
+    if (data.nodeType === 'director') {
+      context.beginPath();
+      context.arc(data.x, data.y, nodeSize, 0, Math.PI * 2);
+      context.closePath();
+      context.fill();
+      context.lineWidth = 2.5;
+      context.strokeStyle = "#38bdf8";
+      context.stroke();
+    } else if (data.type === 'circle' || data.nodeType === 'actor') {
       context.beginPath();
       context.arc(data.x, data.y, nodeSize, 0, Math.PI * 2);
       context.closePath();
@@ -157,7 +166,7 @@ const sigmaSettings = {
       size + (paddingY * 2)
     );
 
-    context.fillStyle = "#7a280f";
+    context.fillStyle = data.nodeType === 'director' ? "#0369a1" : "#7a280f";
     context.fillText(data.label, data.x + textOffsetX, data.y + textOffsetY + 1);
   }
 };
@@ -186,7 +195,7 @@ function App() {
               setHoveredNodeId={setHoveredNodeId}
             />
             <p style={{ marginTop: '16px' }}>
-              Explore the constellation of Telugu cinema. Search for your favorite actors or movies.
+              Explore the constellation of Telugu cinema. Search for your favorite actors, directors, or movies.
             </p>
           </div>
         </aside>

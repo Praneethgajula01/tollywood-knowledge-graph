@@ -35,14 +35,14 @@ const SearchBar = ({ sigmaInstance, setSelectedNodeId, setHoveredNodeId }) => {
 
   return (
     <div className="search-container">
-      <label htmlFor="search">Find Actor Or Movie</label>
+      <label htmlFor="search">Find Actor, Director, Or Movie</label>
       <div className="search-input-wrap">
         <Search size={16} />
         <input 
           id="search"
           type="text" 
           className="search-input" 
-          placeholder="Mahesh Babu, Prabhas..." 
+          placeholder="Prabhas, Rajamouli, Pokiri..." 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -60,6 +60,12 @@ const SearchBar = ({ sigmaInstance, setSelectedNodeId, setHoveredNodeId }) => {
           onClick={() => setFilterType('actor')}
         >
           Actors
+        </button>
+        <button 
+          className={`filter-btn ${filterType === 'director' ? 'active' : ''}`}
+          onClick={() => setFilterType('director')}
+        >
+          Directors
         </button>
         <button 
           className={`filter-btn ${filterType === 'movie' ? 'active' : ''}`}
@@ -80,7 +86,9 @@ const SearchBar = ({ sigmaInstance, setSelectedNodeId, setHoveredNodeId }) => {
               onMouseLeave={() => setHoveredNodeId(null)}
             >
               <span className="title">{node.label}</span>
-              <span className="sub">{node.nodeType === 'actor' ? 'Actor' : 'Movie'}</span>
+              <span className="sub">
+                {node.nodeType === 'actor' ? 'Actor' : node.nodeType === 'director' ? '🎬 Director' : 'Movie'}
+              </span>
             </div>
           ))}
         </div>
