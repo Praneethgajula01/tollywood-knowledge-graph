@@ -297,33 +297,6 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
               </div>
             )}
 
-            {/* Top Frequent Actor Collaborators */}
-            {data.top_actors && data.top_actors.length > 0 && (
-              <div className="director-collaborators-list">
-                <span className="meta-label block" style={{ marginTop: '16px', marginBottom: '12px' }}>Frequent Actors</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto', paddingRight: '4px' }}>
-                  {data.top_actors.map((actor, idx) => {
-                    const actorNodeId = getActorNodeId(actor);
-                    const isAvailable = Boolean(actorNodeId);
-                    return (
-                      <div
-                        key={actor.id || idx}
-                        className={`result ${isAvailable ? 'clickable' : ''}`}
-                        style={{ cursor: isAvailable ? 'pointer' : 'default', opacity: isAvailable ? 1 : 0.7 }}
-                        onClick={() => isAvailable && handleSelectNode(actorNodeId)}
-                        onMouseEnter={() => isAvailable && setHoveredNodeId && setHoveredNodeId(actorNodeId)}
-                        onMouseLeave={() => isAvailable && setHoveredNodeId && setHoveredNodeId(null)}
-                        title={isAvailable ? "Click to view actor on graph" : "Actor not on graph"}
-                      >
-                        <span className="title">{actor.name}</span>
-                        <span className="sub">⭐ {actor.count} {actor.count === 1 ? 'film' : 'films'}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Filmography */}
             {data.movies && data.movies.length > 0 && (
               <div className="director-movies-list">
@@ -349,6 +322,33 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
                         </div>
                       );
                     })}
+                </div>
+              </div>
+            )}
+
+            {/* Top Frequent Actor Collaborators */}
+            {data.top_actors && data.top_actors.length > 0 && (
+              <div className="director-collaborators-list">
+                <span className="meta-label block" style={{ marginTop: '16px', marginBottom: '12px' }}>Frequent Actors</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto', paddingRight: '4px' }}>
+                  {data.top_actors.map((actor, idx) => {
+                    const actorNodeId = getActorNodeId(actor);
+                    const isAvailable = Boolean(actorNodeId);
+                    return (
+                      <div
+                        key={actor.id || idx}
+                        className={`result ${isAvailable ? 'clickable' : ''}`}
+                        style={{ cursor: isAvailable ? 'pointer' : 'default', opacity: isAvailable ? 1 : 0.7 }}
+                        onClick={() => isAvailable && handleSelectNode(actorNodeId)}
+                        onMouseEnter={() => isAvailable && setHoveredNodeId && setHoveredNodeId(actorNodeId)}
+                        onMouseLeave={() => isAvailable && setHoveredNodeId && setHoveredNodeId(null)}
+                        title={isAvailable ? "Click to view actor on graph" : "Actor not on graph"}
+                      >
+                        <span className="title">{actor.name}</span>
+                        <span className="sub">⭐ {actor.count} {actor.count === 1 ? 'film' : 'films'}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
