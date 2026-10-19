@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Focus, Maximize2, Network, X } from 'lucide-react';
 
-const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaInstance }) => {
+const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaInstance, castNetworkMode = true, setCastNetworkMode }) => {
   const [nodeData, setNodeData] = useState(null);
   const [cast, setCast] = useState([]);
   const [movieDirectors, setMovieDirectors] = useState([]);
@@ -26,6 +27,74 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
       }
     } else {
       setSelectedNodeId(nodeId);
+    }
+  };
+
+  const fitNetworkInView = () => {
+    if (!sigmaInstance || !selectedNodeId) return;
+    const graph = sigmaInstance.getGraph();
+    if (!graph || !graph.hasNode(selectedNodeId)) return;
+
+    const movieNeighbors = graph.neighbors(selectedNodeId);
+    let targetNodes = [selectedNodeId, ...movieNeighbors];
+
+    if (castNetworkMode) {
+      const actorSet = new Set();
+      movieNeighbors.forEach(m => {
+        graph.neighbors(m).forEach(n => {
+          if (graph.getNodeAttribute(n, 'nodeType') === 'actor') {
+            actorSet.add(n);
+          }
+        });
+      });
+      targetNodes.push(...Array.from(actorSet));
+    }
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const id of targetNodes) {
+      if (graph.hasNode(id)) {
+        const displayData = sigmaInstance.getNodeDisplayData(id);
+        if (displayData && isFinite(displayData.x) && isFinite(displayData.y)) {
+          if (displayData.x < minX) minX = displayData.x;
+          if (displayData.x > maxX) maxX = displayData.x;
+          if (displayData.y < minY) minY = displayData.y;
+          if (displayData.y > maxY) maxY = displayData.y;
+        }
+      }
+    }
+
+    if (!isFinite(minX)) return;
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const spanX = Math.max(maxX - minX, 0.05);
+    const spanY = Math.max(maxY - minY, 0.05);
+
+    const zoomMax = sigmaInstance.getSetting("zoomMax") || 1;
+    const targetRatio = Math.min(zoomMax, Math.max(spanX, spanY) * 1.35);
+
+    const camera = sigmaInstance.getCamera();
+    if (camera) {
+      camera.animate(
+        { x: centerX, y: centerY, ratio: targetRatio },
+        { duration: 600 }
+      );
+    }
+  };
+
+  const centerDirector = () => {
+    if (!sigmaInstance || !selectedNodeId) return;
+    const graph = sigmaInstance.getGraph();
+    if (!graph || !graph.hasNode(selectedNodeId)) return;
+
+    const nodeDisplayData = sigmaInstance.getNodeDisplayData(selectedNodeId);
+    const zoomMax = sigmaInstance.getSetting("zoomMax") || 1;
+    const camera = sigmaInstance.getCamera();
+    if (camera && nodeDisplayData) {
+      camera.animate(
+        { x: nodeDisplayData.x, y: nodeDisplayData.y, ratio: Math.min(zoomMax * 0.35, camera.getState().ratio) },
+        { duration: 500 }
+      );
     }
   };
 
@@ -132,11 +201,31 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
 
   const { nodeType: type, data, label } = nodeData;
 
+  const handleDeselect = () => {
+    if (setSelectedNodeId) setSelectedNodeId(null);
+    if (sigmaInstance) {
+      const initialCamera = sigmaInstance.getSetting("initialCameraState");
+      const camera = sigmaInstance.getCamera();
+      if (camera && initialCamera) {
+        camera.animate(initialCamera, { duration: 500 });
+      }
+    }
+  };
+
   return (
     <div className="panel">
       <div className="sidebar-header">
-        <div className={`badge badge-${type}`}>
-          {type === 'director' ? '◆ DIRECTOR' : type}
+        <div className="sidebar-header-top">
+          <div className={`badge badge-${type}`}>
+            {type === 'director' ? '◆ DIRECTOR' : type}
+          </div>
+          <button 
+            className="sidebar-close-btn" 
+            onClick={handleDeselect}
+            title="Deselect node & reset view"
+          >
+            <X size={15} />
+          </button>
         </div>
         <h2>{label}</h2>
       </div>
@@ -282,6 +371,34 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
 
         {type === 'director' && (
           <div className="meta-list">
+            {/* Interactive Graph Action Controls */}
+            <div className="graph-action-bar">
+              <button 
+                className="graph-action-btn primary" 
+                onClick={fitNetworkInView} 
+                title="Fit and frame director and all movies on graph"
+              >
+                <Maximize2 size={13} />
+                <span>Fit Network</span>
+              </button>
+              <button 
+                className="graph-action-btn" 
+                onClick={centerDirector} 
+                title="Zoom camera to director node"
+              >
+                <Focus size={13} />
+                <span>Center</span>
+              </button>
+              <button 
+                className={`graph-action-btn ${castNetworkMode ? 'active' : ''}`} 
+                onClick={() => setCastNetworkMode && setCastNetworkMode(!castNetworkMode)} 
+                title={castNetworkMode ? "Cast network active. Click to show movies only." : "Click to show full cast network on graph."}
+              >
+                <Network size={13} />
+                <span>{castNetworkMode ? 'Cast Web: ON' : 'Cast Web: OFF'}</span>
+              </button>
+            </div>
+
             <div className="meta-item">
               <span className="meta-label">Debut Era</span>
               <span className="meta-value">{data.debutLabel || (data.debut_year ? `c. ${data.debut_year}` : 'Unknown')}</span>

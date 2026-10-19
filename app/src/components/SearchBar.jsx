@@ -24,12 +24,16 @@ const SearchBar = ({ sigmaInstance, setSelectedNodeId, setHoveredNodeId }) => {
 
   const handleSelect = (node) => {
     setSelectedNodeId(node.id);
-    // const nodePosition = sigmaInstance.getGraph().getNodeAttributes(node.id);
-    // const currentCameraState = sigmaInstance.getCamera().getState();
-    // sigmaInstance.getCamera().animate(
-    //   { x: nodePosition.x, y: nodePosition.y, ratio: currentCameraState.ratio }, 
-    //   { duration: 600 }
-    // );
+    if (sigmaInstance) {
+      const nodeDisplayData = sigmaInstance.getNodeDisplayData(node.id);
+      const camera = sigmaInstance.getCamera();
+      if (camera && nodeDisplayData) {
+        camera.animate(
+          { x: nodeDisplayData.x, y: nodeDisplayData.y, ratio: camera.getState().ratio }, 
+          { duration: 500 }
+        );
+      }
+    }
     setQuery('');
   };
 

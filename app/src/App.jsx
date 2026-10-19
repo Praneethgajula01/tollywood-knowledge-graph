@@ -9,7 +9,7 @@ import SearchBar from './components/SearchBar';
 
 import DobScale from './components/DobScale';
 
-const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelectedNode, setIsLoading, setSigmaInstance }) => {
+const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelectedNode, setIsLoading, setSigmaInstance, castNetworkMode = true }) => {
   const loadGraph = useLoadGraph();
   const sigma = useSigma();
   const registerEvents = useRegisterEvents();
@@ -23,11 +23,12 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       loadGraph(graph);
       setIsLoading(false);
       
-      // Wait for the camera to fit the graph, then lock zoom out
+      // Wait for the camera to fit the graph, then lock zoom out and record initial state
       setTimeout(() => {
         if (sigma && sigma.getCamera()) {
-          const initialRatio = sigma.getCamera().getState().ratio;
-          sigma.setSetting("zoomMax", initialRatio);
+          const state = sigma.getCamera().getState();
+          sigma.setSetting("zoomMax", state.ratio);
+          sigma.setSetting("initialCameraState", { x: state.x, y: state.y, ratio: state.ratio });
         }
       }, 100);
     }).catch(error => {
@@ -42,15 +43,14 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       leaveNode: () => setHoveredNode(null),
       clickNode: (event) => {
         setSelectedNode(event.node);
-        // Temporarily comment out the animation to see if it's the culprit
-        // const nodePosition = sigma.getGraph().getNodeAttributes(event.node);
-        // const currentCameraState = sigma.getCamera().getState();
-        // sigma.getCamera().animate(
-        //   { x: nodePosition.x, y: nodePosition.y, ratio: currentCameraState.ratio },
-        //   { duration: 600 }
-        // );
       },
-      clickStage: () => setSelectedNode(null),
+      clickStage: () => {
+        setSelectedNode(null);
+        const initialCamera = sigma.getSetting("initialCameraState");
+        if (initialCamera && sigma.getCamera()) {
+          sigma.getCamera().animate(initialCamera, { duration: 500 });
+        }
+      },
     });
   }, [registerEvents, setHoveredNode, setSelectedNode, sigma]);
 
@@ -60,27 +60,179 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
 
     const activeNodeId = hoveredNodeId || selectedNodeId;
 
-    if (activeNodeId) {
-      if (!graph.hasNode(activeNodeId)) return;
-      const neighbors = new Set(graph.neighbors(activeNodeId));
+    if (!activeNodeId) {
+      sigma.setSetting("nodeReducer", null);
+      sigma.setSetting("edgeReducer", null);
+      return;
+    }
+
+    if (!graph.hasNode(activeNodeId)) return;
+
+    const selectedType = selectedNodeId && graph.hasNode(selectedNodeId) ? graph.getNodeAttribute(selectedNodeId, 'nodeType') : null;
+    const hoveredType = hoveredNodeId && graph.hasNode(hoveredNodeId) ? graph.getNodeAttribute(hoveredNodeId, 'nodeType') : null;
+
+    // --- CASE 1: COLLABORATION SPOTLIGHT (Hovering Actor while Director selected, or vice versa) ---
+    const isDirectorActorCollab = (
+      selectedNodeId &&
+      hoveredNodeId &&
+      selectedNodeId !== hoveredNodeId &&
+      ((selectedType === 'director' && hoveredType === 'actor') ||
+       (selectedType === 'actor' && hoveredType === 'director'))
+    );
+
+    if (isDirectorActorCollab) {
+      const directorId = selectedType === 'director' ? selectedNodeId : hoveredNodeId;
+      const actorId = selectedType === 'actor' ? selectedNodeId : hoveredNodeId;
+
+      const directorMovies = new Set(graph.neighbors(directorId));
+      const actorMovies = new Set(graph.neighbors(actorId));
+      const sharedMovies = new Set([...directorMovies].filter(m => actorMovies.has(m)));
 
       sigma.setSetting("nodeReducer", (node, data) => {
         const res = { ...data };
-        if (node === activeNodeId || neighbors.has(node)) {
-          if (node === activeNodeId) {
-            res.forceLabel = true;
-            res.size = (data.size || 5) * 1.5;
-            res.highlighted = true; // Only highlight the active node
-          }
-          res.zIndex = 1;
+        if (node === directorId || node === actorId) {
+          res.forceLabel = true;
+          res.size = (data.size || 5) * 1.6;
           res.highlighted = true;
+          res.zIndex = 3;
+        } else if (sharedMovies.has(node)) {
+          res.forceLabel = true;
+          res.size = (data.size || 5) * 1.4;
+          res.highlighted = true;
+          res.zIndex = 2;
+        } else if (directorMovies.has(node)) {
+          // Dim non-collaborating movies of this director
+          res.color = "rgba(180, 180, 180, 0.2)";
+          res.label = "";
+          res.zIndex = 0;
+        } else {
+          res.hidden = true;
+        }
+        return res;
+      });
 
-          //res.labelColor = "#ffffff";
+      sigma.setSetting("edgeReducer", (edge, data) => {
+        const res = { ...data };
+        const u = graph.source(edge);
+        const v = graph.target(edge);
+
+        const connectsDirToShared = (u === directorId && sharedMovies.has(v)) || (v === directorId && sharedMovies.has(u));
+        const connectsActorToShared = (u === actorId && sharedMovies.has(v)) || (v === actorId && sharedMovies.has(u));
+
+        if (connectsDirToShared) {
+          res.color = "rgba(56, 189, 248, 1)"; // Glowing azure
+          res.size = 2.0;
+          res.zIndex = 3;
+        } else if (connectsActorToShared) {
+          res.color = "rgba(251, 146, 60, 1)"; // Glowing amber
+          res.size = 2.0;
+          res.zIndex = 3;
+        } else {
+          res.hidden = true;
+        }
+        return res;
+      });
+      return;
+    }
+
+    // --- CASE 2: FILM SPOTLIGHT (Hovering a movie while Director selected) ---
+    const isDirectorMovieCollab = (
+      selectedNodeId &&
+      hoveredNodeId &&
+      selectedNodeId !== hoveredNodeId &&
+      ((selectedType === 'director' && hoveredType === 'movie') ||
+       (selectedType === 'movie' && hoveredType === 'director'))
+    );
+
+    if (isDirectorMovieCollab) {
+      const directorId = selectedType === 'director' ? selectedNodeId : hoveredNodeId;
+      const movieId = selectedType === 'movie' ? selectedNodeId : hoveredNodeId;
+
+      const movieActors = new Set(
+        graph.neighbors(movieId).filter(n => graph.getNodeAttribute(n, 'nodeType') === 'actor')
+      );
+      const directorMovies = new Set(graph.neighbors(directorId));
+
+      sigma.setSetting("nodeReducer", (node, data) => {
+        const res = { ...data };
+        if (node === directorId || node === movieId) {
+          res.forceLabel = true;
+          res.size = (data.size || 5) * 1.7;
+          res.highlighted = true;
+          res.zIndex = 3;
+        } else if (movieActors.has(node)) {
+          res.forceLabel = true;
+          res.highlighted = true;
+          res.zIndex = 2;
+        } else if (directorMovies.has(node)) {
+          res.color = "rgba(180, 180, 180, 0.2)";
+          res.label = "";
+          res.zIndex = 0;
+        } else {
+          res.hidden = true;
+        }
+        return res;
+      });
+
+      sigma.setSetting("edgeReducer", (edge, data) => {
+        const res = { ...data };
+        const u = graph.source(edge);
+        const v = graph.target(edge);
+
+        const isDirEdge = (u === directorId && v === movieId) || (v === directorId && u === movieId);
+        const isActorEdge = (u === movieId && movieActors.has(v)) || (v === movieId && movieActors.has(u));
+
+        if (isDirEdge) {
+          res.color = "rgba(56, 189, 248, 1)";
+          res.size = 2.2;
+          res.zIndex = 3;
+        } else if (isActorEdge) {
+          res.color = "rgba(251, 146, 60, 0.9)";
+          res.size = 1.3;
+          res.zIndex = 2;
+        } else {
+          res.hidden = true;
+        }
+        return res;
+      });
+      return;
+    }
+
+    // --- CASE 3: DIRECTOR SELECTION (With optional 2-hop Cast Network) ---
+    const activeType = graph.getNodeAttribute(activeNodeId, 'nodeType');
+
+    if (activeType === 'director') {
+      const directMovies = new Set(graph.neighbors(activeNodeId));
+      const connectedActors = new Set();
+
+      if (castNetworkMode) {
+        directMovies.forEach(m => {
+          graph.neighbors(m).forEach(n => {
+            if (graph.getNodeAttribute(n, 'nodeType') === 'actor') {
+              connectedActors.add(n);
+            }
+          });
+        });
+      }
+
+      sigma.setSetting("nodeReducer", (node, data) => {
+        const res = { ...data };
+        if (node === activeNodeId) {
+          res.forceLabel = true;
+          res.size = (data.size || 5) * 1.6;
+          res.highlighted = true;
+          res.zIndex = 3;
+        } else if (directMovies.has(node)) {
+          res.forceLabel = true;
+          res.highlighted = true;
+          res.zIndex = 2;
+        } else if (castNetworkMode && connectedActors.has(node)) {
+          res.zIndex = 1;
         } else {
           if (selectedNodeId) {
             res.hidden = true;
           } else {
-            res.color = "rgba(200, 195, 185, 0.3)"; // Faded
+            res.color = "rgba(200, 195, 185, 0.3)";
             res.label = "";
             res.zIndex = 0;
           }
@@ -91,20 +243,68 @@ const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelect
       sigma.setSetting("edgeReducer", (edge, data) => {
         const res = { ...data };
         if (graph.hasExtremity(edge, activeNodeId)) {
-          const activeType = graph.getNodeAttribute(activeNodeId, 'nodeType');
-          res.color = activeType === 'director' ? "rgba(2, 132, 199, 0.95)" : "rgba(92, 45, 18, 0.9)";
-          res.size = 1.0;
-          res.zIndex = 1;
+          res.color = "rgba(2, 132, 199, 0.95)";
+          res.size = 1.1;
+          res.zIndex = 2;
+        } else if (castNetworkMode) {
+          const u = graph.source(edge);
+          const v = graph.target(edge);
+          const hasMovie = directMovies.has(u) || directMovies.has(v);
+          const hasActor = connectedActors.has(u) || connectedActors.has(v);
+
+          if (hasMovie && hasActor) {
+            res.color = "rgba(180, 83, 9, 0.35)";
+            res.size = 0.3;
+            res.zIndex = 0;
+          } else {
+            res.hidden = true;
+          }
         } else {
           res.hidden = true;
         }
         return res;
       });
-    } else {
-      sigma.setSetting("nodeReducer", null);
-      sigma.setSetting("edgeReducer", null);
+      return;
     }
-  }, [hoveredNodeId, selectedNodeId, sigma]);
+
+    // --- CASE 4: DEFAULT (Movie or Actor 1-hop view) ---
+    const neighbors = new Set(graph.neighbors(activeNodeId));
+
+    sigma.setSetting("nodeReducer", (node, data) => {
+      const res = { ...data };
+      if (node === activeNodeId || neighbors.has(node)) {
+        if (node === activeNodeId) {
+          res.forceLabel = true;
+          res.size = (data.size || 5) * 1.5;
+          res.highlighted = true;
+        }
+        res.zIndex = 1;
+        res.highlighted = true;
+      } else {
+        if (selectedNodeId) {
+          res.hidden = true;
+        } else {
+          res.color = "rgba(200, 195, 185, 0.3)";
+          res.label = "";
+          res.zIndex = 0;
+        }
+      }
+      return res;
+    });
+
+    sigma.setSetting("edgeReducer", (edge, data) => {
+      const res = { ...data };
+      if (graph.hasExtremity(edge, activeNodeId)) {
+        const type = graph.getNodeAttribute(activeNodeId, 'nodeType');
+        res.color = type === 'director' ? "rgba(2, 132, 199, 0.95)" : "rgba(92, 45, 18, 0.9)";
+        res.size = 1.0;
+        res.zIndex = 1;
+      } else {
+        res.hidden = true;
+      }
+      return res;
+    });
+  }, [hoveredNodeId, selectedNodeId, sigma, castNetworkMode]);
 
   return null;
 };
@@ -181,6 +381,7 @@ function App() {
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sigmaInstance, setSigmaInstance] = useState(null);
+  const [castNetworkMode, setCastNetworkMode] = useState(true);
   
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
@@ -225,6 +426,7 @@ function App() {
               setSelectedNode={setSelectedNodeId}
               setIsLoading={setIsLoading}
               setSigmaInstance={setSigmaInstance}
+              castNetworkMode={castNetworkMode}
             />
             <DobScale />
           </SigmaContainer>
@@ -238,6 +440,8 @@ function App() {
             setSelectedNodeId={setSelectedNodeId}
             setHoveredNodeId={setHoveredNodeId}
             sigmaInstance={sigmaInstance}
+            castNetworkMode={castNetworkMode}
+            setCastNetworkMode={setCastNetworkMode}
           />
         </aside>
       </div>

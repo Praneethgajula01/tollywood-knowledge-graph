@@ -240,6 +240,37 @@ select:focus {
   margin-bottom: 8px;
 }
 
+.sidebar-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.sidebar-close-btn {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  min-width: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
 .sidebar-image {
   width: 100%;
   border-radius: 12px;
@@ -255,9 +286,59 @@ select:focus {
   width: 100%;
 }
 
-.sidebar-image.actor {
-  width: 35%;
-  max-width: 200px;
+.sidebar-image.actor,
+.sidebar-image.director {
+  width: 130px;
+  height: 155px;
+  max-width: 180px;
+  border-radius: 14px;
+  object-fit: cover;
+  margin-bottom: 14px;
+}
+
+.sidebar-image.director {
+  border: 2.5px solid #38bdf8;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4);
+}
+
+/* Graph Interactive Action Bar */
+.graph-action-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.graph-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 5px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: rgba(2, 132, 199, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #bae6fd;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.graph-action-btn:hover {
+  background: rgba(2, 132, 199, 0.42);
+  border-color: rgba(56, 189, 248, 0.8);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.graph-action-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
 
 .meta-list {
