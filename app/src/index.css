@@ -654,3 +654,122 @@ select:focus {
   transition: all 0.2s ease;
   user-select: none;
 }
+
+/* Graph Legend Floating Overlay */
+.graph-legend-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(122, 40, 15, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  color: #ffffff;
+  z-index: 5;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 190px;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.15);
+  user-select: none;
+}
+
+.legend-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.legend-toggle-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.legend-toggle-btn:hover {
+  opacity: 1;
+}
+
+.legend-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: all 0.15s ease;
+}
+
+.legend-item.clickable {
+  cursor: pointer;
+}
+
+.legend-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(2px);
+}
+
+.legend-symbol {
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+
+.symbol-actor {
+  color: #c4a6fb;
+}
+
+.symbol-movie {
+  color: #fbd38d;
+}
+
+.symbol-director {
+  color: #38bdf8;
+}
+
+.legend-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.legend-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: #ffffff;
+}
+
+.legend-meta {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}

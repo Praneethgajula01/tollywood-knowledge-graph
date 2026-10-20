@@ -8,6 +8,7 @@ import Sidebar from './components/Sidebar';
 import SearchBar from './components/SearchBar';
 
 import DobScale from './components/DobScale';
+import GraphLegend from './components/GraphLegend';
 
 const GraphManager = ({ setHoveredNode, hoveredNodeId, selectedNodeId, setSelectedNode, setIsLoading, setSigmaInstance, castNetworkMode = true }) => {
   const loadGraph = useLoadGraph();
@@ -430,6 +431,7 @@ function App() {
             />
             <DobScale />
           </SigmaContainer>
+          <GraphLegend sigmaInstance={sigmaInstance} />
         </main>
 
         <div className="toggle-line" onClick={() => setRightOpen(!rightOpen)} title="Toggle Right Panel"></div>
