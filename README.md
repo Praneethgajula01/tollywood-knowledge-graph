@@ -71,4 +71,5 @@ To run the web application locally:
    npm run dev
    ```
 
-Enjoy exploring the Tollywood Knowledge Graph! 🍿
+Enjoy exploring the Tollywood Knowledge Graph!
+

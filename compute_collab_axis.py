@@ -211,10 +211,17 @@ def main():
         "collab_y_range": [round(min(collab_y.values()), 2), round(max(collab_y.values()), 2)],
         "anchor_ks": ANCHOR_KS,
     }
-    (DATA_DIR / "collab_axis_meta.json").write_text(json.dumps(coord_summary, indent=2), encoding="utf-8")
+    coord_summary_str = json.dumps(coord_summary, indent=2)
+    (DATA_DIR / "collab_axis_meta.json").write_text(coord_summary_str, encoding="utf-8")
+
+    public_data_dir = Path("app/public/data")
+    if public_data_dir.exists():
+        (public_data_dir / "actors.json").write_text(json.dumps(actors, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "movies.json").write_text(json.dumps(movies, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "collab_axis_meta.json").write_text(coord_summary_str, encoding="utf-8")
 
     print("\nWrote data/actors.json, data/movies.json (added collab_y + collab_y_anchor_* fields)")
-    print("Wrote data/collab_axis_meta.json (summary for reference)")
+    print("Wrote data/collab_axis_meta.json (and synced to app/public/data)")
     print(f"\ncollab_y range: {coord_summary['collab_y_range']}")
 
 

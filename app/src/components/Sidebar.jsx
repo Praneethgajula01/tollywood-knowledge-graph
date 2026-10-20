@@ -295,7 +295,7 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
             {data.vote_average > 0 && (
               <div className="meta-item">
                 <span className="meta-label">Rating</span>
-                <span className="meta-value rating">⭐ {Number(data.vote_average).toFixed(1)}</span>
+                <span className="meta-value rating">{Number(data.vote_average).toFixed(1)}</span>
               </div>
             )}
             {data.overview && (
@@ -435,7 +435,7 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
                           title={isAvailable ? "Click to view movie on graph" : "Movie not on graph"}
                         >
                           <span className="title">{movie.title}</span>
-                          <span className="sub">{movie.year || 'Unknown Year'} {movie.vote_average ? ` • ⭐ ${Number(movie.vote_average).toFixed(1)}` : ''}</span>
+                          <span className="sub">{movie.year || 'Unknown Year'} {movie.vote_average ? ` • ${Number(movie.vote_average).toFixed(1)}` : ''}</span>
                         </div>
                       );
                     })}
@@ -462,7 +462,7 @@ const Sidebar = ({ selectedNodeId, setSelectedNodeId, setHoveredNodeId, sigmaIns
                         title={isAvailable ? "Click to view actor on graph" : "Actor not on graph"}
                       >
                         <span className="title">{actor.name}</span>
-                        <span className="sub">⭐ {actor.count} {actor.count === 1 ? 'film' : 'films'}</span>
+                        <span className="sub">{actor.count} {actor.count === 1 ? 'film' : 'films'}</span>
                       </div>
                     );
                   })}

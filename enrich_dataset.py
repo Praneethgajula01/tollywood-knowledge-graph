@@ -173,21 +173,25 @@ def main():
     # -------------------------------------------------------------------
     (DATA_DIR / "actors.json").write_text(json.dumps(actors, ensure_ascii=False), encoding="utf-8")
     (DATA_DIR / "movies.json").write_text(json.dumps(movies, ensure_ascii=False), encoding="utf-8")
-    (DATA_DIR / "cluster_meta.json").write_text(
-        json.dumps(
-            {
-                "total_clusters": total_clusters,
-                "min_real_cluster_size": MIN_REAL_CLUSTER_SIZE,
-                "labels": cluster_labels,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
+    cluster_meta_str = json.dumps(
+        {
+            "total_clusters": total_clusters,
+            "min_real_cluster_size": MIN_REAL_CLUSTER_SIZE,
+            "labels": cluster_labels,
+        },
+        ensure_ascii=False,
+        indent=2,
     )
+    (DATA_DIR / "cluster_meta.json").write_text(cluster_meta_str, encoding="utf-8")
+
+    public_data_dir = Path("app/public/data")
+    if public_data_dir.exists():
+        (public_data_dir / "actors.json").write_text(json.dumps(actors, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "movies.json").write_text(json.dumps(movies, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "cluster_meta.json").write_text(cluster_meta_str, encoding="utf-8")
 
     print("\nWrote data/actors.json, data/movies.json (with cluster_id + importance_score)")
-    print("Wrote data/cluster_meta.json (human-readable cluster summary for your reference)")
+    print("Wrote data/cluster_meta.json (and synced to app/public/data)")
 
 
 if __name__ == "__main__":

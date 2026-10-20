@@ -384,24 +384,29 @@ def build_dataset():
         actors_out.append(rec)
     actors_out.sort(key=lambda a: -a["movie_count"])
 
-    # remap cast ids inside movies_out to canonical actor ids
+    # remap cast ids inside movies_out to canonical actor ids and deduplicate cast per movie
+    costar_weight = defaultdict(int)
     for m in movies_out:
+        seen_cast = set()
+        deduped_cast = []
         for c in m["cast"]:
-            c["id"] = canonical_map.get(c["id"], c["id"])
+            cid = canonical_map.get(c["id"], c["id"])
+            if cid not in seen_cast:
+                seen_cast.add(cid)
+                c["id"] = cid
+                deduped_cast.append(c)
+        m["cast"] = deduped_cast
 
-    # remap + re-aggregate costar edges to canonical ids (drop self-pairs
-    # created when two merged duplicate profiles "co-starred with themselves")
-    remapped_weight = defaultdict(int)
-    for (a, b), w in costar_weight.items():
-        ca, cb = canonical_map.get(a, a), canonical_map.get(b, b)
-        if ca == cb:
-            continue
-        pair = tuple(sorted((ca, cb)))
-        remapped_weight[pair] += w
+        # recompute clean co-star edge weights
+        cast_ids = list(seen_cast)
+        cast_ids.sort()
+        for i in range(len(cast_ids)):
+            for j in range(i + 1, len(cast_ids)):
+                costar_weight[(cast_ids[i], cast_ids[j])] += 1
 
     edges_out = [
         {"a": a, "b": b, "weight": w}
-        for (a, b), w in sorted(remapped_weight.items(), key=lambda kv: -kv[1])
+        for (a, b), w in sorted(costar_weight.items(), key=lambda kv: -kv[1])
     ]
 
     if merge_report:
@@ -426,9 +431,16 @@ def build_dataset():
     (DATA_DIR / "actors.json").write_text(json.dumps(actors_out, ensure_ascii=False), encoding="utf-8")
     (DATA_DIR / "costar_edges.json").write_text(json.dumps(edges_out, ensure_ascii=False), encoding="utf-8")
 
+    # Sync to app/public/data
+    public_data_dir = Path("app/public/data")
+    if public_data_dir.exists():
+        (public_data_dir / "movies.json").write_text(json.dumps(movies_out, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "actors.json").write_text(json.dumps(actors_out, ensure_ascii=False), encoding="utf-8")
+        (public_data_dir / "costar_edges.json").write_text(json.dumps(edges_out, ensure_ascii=False), encoding="utf-8")
+
     print(f"Kept {kept} strictly-Telugu movies (of {len(files)} cached).")
     print(f"Actors: {len(actors_out)}   Co-star edges: {len(edges_out)}")
-    print(f"Written to {DATA_DIR}/movies.json, actors.json, costar_edges.json")
+    print(f"Written to {DATA_DIR}/movies.json, actors.json, costar_edges.json (and synced to app/public/data)")
 
 
 # ----------------------------------------------------------------------------
